@@ -25,21 +25,27 @@
     const filePath = '.github/workflows/cron-job.yml'; // Güncellemek istediğiniz dosyanın yolu
 
     // GitHub API'den dosyanın mevcut SHA değerini almak için GET isteği
-    fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/${filePath}`, {
+    fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`, {
       method: 'GET',
       headers: {
         'Authorization': `token ${apiToken}`,
         'Content-Type': 'application/json',
       },
     })
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Dosya alınamadı: ' + response.statusText);
+      }
+      return response.json();
+    })
     .then(data => {
       if (data.sha) {
         const sha = data.sha; // Mevcut dosyanın SHA'sını alıyoruz
-        const content = btoa(`cron: '${cronTime}'`); // Yeni cron zamanını base64 formatına çeviriyoruz
+        const updatedContent = `cron: '${cronTime}'`; // Güncel cron zamanını dosyanın içeriğine ekliyoruz
+        const content = btoa(updatedContent); // Yeni cron zamanını base64 formatına çeviriyoruz
 
         // Dosyayı güncellemek için PUT isteği yapıyoruz
-        fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/${filePath}`, {
+        fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`, {
           method: 'PUT',
           headers: {
             'Authorization': `token ${apiToken}`,
@@ -51,13 +57,18 @@
             sha: sha, // Mevcut SHA ile dosyayı güncelliyoruz
           })
         })
-        .then(response => response.json())
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Dosya güncellenirken hata oluştu: ' + response.statusText);
+          }
+          return response.json();
+        })
         .then(data => {
-          console.log('File updated:', data);
-          alert('Cron job zamanınız güncellendi!');
+          console.log('Dosya güncellendi:', data);
+          alert('Cron job zamanınız başarıyla güncellendi!');
         })
         .catch(error => {
-          console.error('Error updating file:', error);
+          console.error('Dosya güncellenemedi:', error);
           alert('Bir hata oluştu.');
         });
       } else {
@@ -65,7 +76,7 @@
       }
     })
     .catch(error => {
-      console.error('Error fetching file:', error);
+      console.error('Hata oluştu:', error);
       alert('Bir hata oluştu.');
     });
   });
