@@ -19,33 +19,53 @@
     event.preventDefault();
     const cronTime = document.getElementById('cronTime').value;
 
-    const apiToken = 'YOUR_GITHUB_API_TOKEN'; // GitHub API tokenınızı buraya girin
-    const repoOwner = 'YOUR_GITHUB_USERNAME'; // GitHub kullanıcı adınızı buraya yazın
-    const repoName = 'YOUR_REPOSITORY_NAME'; // Repository adınızı buraya yazın
-    const filePath = 'path/to/your/file.yml'; // Güncellemek istediğiniz dosyanın yolu
+    const apiToken = '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'; // GitHub API tokenınızı buraya girin
+    const repoOwner = 'yilmazkara'; // GitHub kullanıcı adınızı buraya yazın
+    const repoName = 'cron-job-manager'; // Repository adınızı buraya yazın
+    const filePath = '.github/workflows/cron-job.yml'; // Güncellemek istediğiniz dosyanın yolu
 
-    const message = "Update cron job time";
-    const content = btoa(`cron: '${cronTime}'`); // Base64 encoding
-
+    // GitHub API'den dosyanın mevcut SHA değerini almak için GET isteği
     fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`, {
-      method: 'PUT',
+      method: 'GET',
       headers: {
         'Authorization': `token ${apiToken}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        message: message,
-        content: content,
-        sha: 'CURRENT_FILE_SHA' // Güncellemek istediğiniz dosyanın mevcut SHA değerini buraya ekleyin
-      })
     })
     .then(response => response.json())
     .then(data => {
-      console.log('File updated:', data);
-      alert('Cron job zamanınız güncellendi!');
+      if (data.sha) {
+        const sha = data.sha; // Mevcut dosyanın SHA'sını alıyoruz
+        const content = btoa(`cron: '${cronTime}'`); // Yeni cron zamanını base64 formatına çeviriyoruz
+
+        // Dosyayı güncellemek için PUT isteği yapıyoruz
+        fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `token ${apiToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: "Update cron job time",
+            content: content,
+            sha: sha, // Mevcut SHA ile dosyayı güncelliyoruz
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('File updated:', data);
+          alert('Cron job zamanınız güncellendi!');
+        })
+        .catch(error => {
+          console.error('Error updating file:', error);
+          alert('Bir hata oluştu.');
+        });
+      } else {
+        alert('Dosya bulunamadı.');
+      }
     })
     .catch(error => {
-      console.error('Error updating file:', error);
+      console.error('Error fetching file:', error);
       alert('Bir hata oluştu.');
     });
   });
