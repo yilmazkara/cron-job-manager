@@ -1,41 +1,55 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cron Job Yönetimi</title>
+  <title>Cron Job Zamanı Güncelle</title>
 </head>
 <body>
 
-  <h1>Cron Job Yönetimi</h1>
+<h2>Cron Job Zamanını Güncelle</h2>
+<form id="cronForm">
+  <label for="cronTime">Cron Zamanı (Örn: 0 12 * * *):</label><br>
+  <input type="text" id="cronTime" name="cronTime"><br><br>
+  <button type="submit">Güncelle</button>
+</form>
 
-  <form id="cronJobForm">
-    <input type="text" id="title" placeholder="Job Başlığı" required><br><br>
-    <textarea id="content" placeholder="Job İçeriği" required></textarea><br><br>
-    <input type="text" id="schedule" placeholder="Cron Zamanlaması (örn. '0 9 * * *')" required><br><br>
-    <button type="submit">Cron Job Ekle</button>
-  </form>
+<script>
+  document.getElementById('cronForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const cronTime = document.getElementById('cronTime').value;
 
-  <script>
-    // Formu işleme
-    document.getElementById('cronJobForm').addEventListener('submit', function(e) {
-      e.preventDefault();
+    const apiToken = 'YOUR_GITHUB_API_TOKEN'; // GitHub API tokenınızı buraya girin
+    const repoOwner = 'YOUR_GITHUB_USERNAME'; // GitHub kullanıcı adınızı buraya yazın
+    const repoName = 'YOUR_REPOSITORY_NAME'; // Repository adınızı buraya yazın
+    const filePath = 'path/to/your/file.yml'; // Güncellemek istediğiniz dosyanın yolu
 
-      const title = document.getElementById('title').value;
-      const content = document.getElementById('content').value;
-      const schedule = document.getElementById('schedule').value;
+    const message = "Update cron job time";
+    const content = btoa(`cron: '${cronTime}'`); // Base64 encoding
 
-      // Cron job verilerini bir JSON dosyasına kaydetmek için GitHub API kullanılacak
-      fetch('/add-cron-job', {
-        method: 'POST',
-        body: JSON.stringify({ title, content, schedule }),
-        headers: { 'Content-Type': 'application/json' }
+    fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${apiToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: message,
+        content: content,
+        sha: 'CURRENT_FILE_SHA' // Güncellemek istediğiniz dosyanın mevcut SHA değerini buraya ekleyin
       })
-      .then(response => response.json())
-      .then(data => alert("Cron job başarıyla eklendi!"))
-      .catch(error => alert("Bir hata oluştu"));
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('File updated:', data);
+      alert('Cron job zamanınız güncellendi!');
+    })
+    .catch(error => {
+      console.error('Error updating file:', error);
+      alert('Bir hata oluştu.');
     });
-  </script>
+  });
+</script>
 
 </body>
 </html>
