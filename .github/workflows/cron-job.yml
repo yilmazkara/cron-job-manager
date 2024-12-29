@@ -1,0 +1,24 @@
+name: Cron Job
+
+on:
+  schedule:
+    - cron: '0 12 * * *'  # GitHub API üzerinden güncellenen cron time'ı kullanacak şekilde ayarlayın
+  workflow_dispatch:  # Manuel tetikleme
+
+jobs:
+  send_email:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Send Email
+      run: |
+        echo "Mail Gönderiliyor..."
+        curl --url 'smtp://smtp.gmail.com:587' --ssl-reqd \
+        --mail-from ${{ secrets.MAIL_USERNAME }} \
+        --mail-rcpt recipient@example.com \
+        --upload-file mail.txt \
+        --user ${{ secrets.MAIL_USERNAME }}:${{ secrets.MAIL_PASSWORD }} \
+        -k
