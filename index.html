@@ -39,7 +39,7 @@
         const content = btoa(`cron: '${cronTime}'`); // Yeni cron zamanını base64 formatına çeviriyoruz
 
         // Dosyayı güncellemek için PUT isteği yapıyoruz
-        fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`, {
+        fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/${filePath}`, {
           method: 'PUT',
           headers: {
             'Authorization': `token ${apiToken}`,
