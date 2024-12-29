@@ -25,7 +25,7 @@
     const filePath = '.github/workflows/cron-job.yml'; // Güncellemek istediğiniz dosyanın yolu
 
     // GitHub API'den dosyanın mevcut SHA değerini almak için GET isteği
-    fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`, {
+    fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/${filePath}`, {
       method: 'GET',
       headers: {
         'Authorization': `token ${apiToken}`,
